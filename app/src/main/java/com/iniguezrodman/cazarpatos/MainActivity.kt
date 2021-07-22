@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                     moverPato()
                     inicializarCuentaRegresiva()
                 })
-            .setNegativeButton("Cerrar",
+            .setNegativeButton("Salir",
                 { _, _ ->
                     //dialog.dismiss()
                 })

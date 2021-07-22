@@ -3,11 +3,14 @@ package com.iniguezrodman.cazarpatos
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import java.util.regex.Pattern
+
 
 class LoginActivity : AppCompatActivity() {
     lateinit var editTextEmail: EditText
@@ -60,6 +63,20 @@ class LoginActivity : AppCompatActivity() {
         mediaPlayer=MediaPlayer.create(this, R.raw.title_screen)
         mediaPlayer.start()
     }
+    //validar email
+    val EMAIL_ADDRESS_PATTERN = Pattern.compile(
+        "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
+                "\\@" +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+                "(" +
+                "\\." +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+                ")+"
+    )
+    fun isValidString(str: String): Boolean{
+        return EMAIL_ADDRESS_PATTERN.matcher(str).matches()
+    }
+
     private fun ActivarRecuerdame():Boolean{
         val sharedPref = getPreferences(Context.MODE_PRIVATE)
         if(sharedPref.getString(LOGIN_KEY,"") != null&& sharedPref.getString(PASSWORD_KEY,"")!=null) {
