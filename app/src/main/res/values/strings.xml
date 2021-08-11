@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Cazar Patos</string>
+    <string name="app_name">CazarPatos</string>
+    <string name="saludos">Saludos a todos</string>
 </resources>

@@ -10,11 +10,12 @@ class RankingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ranking)
 
-        var jugadores = arrayListOf<Jugador>()
-        jugadores.add(Jugador("Jugador1",10))
-        jugadores.add(Jugador("Jugador2",9))
-        jugadores.add(Jugador("Jugador3",8))
-        jugadores.add(Jugador("Jugador4",7))
+        //var jugadores = arrayListOf<Jugador>()
+        var jugadores = ArrayList<Jugador>()
+        jugadores.add(Jugador("Jugador1", 10))
+        jugadores.add(Jugador("Jugador2", 9))
+        jugadores.add(Jugador("Jugador3", 8))
+        jugadores.add(Jugador("Jugador4", 7))
 
         val recyclerViewRanking: RecyclerView = findViewById(R.id.recyclerViewRanking);
         recyclerViewRanking.layoutManager = LinearLayoutManager(this);

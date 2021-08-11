@@ -3,35 +3,37 @@ package com.iniguezrodman.cazarpatos
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Patterns
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
-import java.util.regex.Pattern
-
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 
 class LoginActivity : AppCompatActivity() {
     lateinit var editTextEmail: EditText
-    lateinit var editTextPassword: EditText
+    lateinit var editTextPassword:EditText
     lateinit var buttonLogin: Button
     lateinit var buttonNewUser:Button
-    lateinit var mediaPlayer: MediaPlayer
     lateinit var checkBoxRecordarme: CheckBox
-
+    lateinit var mediaPlayer: MediaPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        val sharedPref = getPreferences(Context.MODE_PRIVATE)
         //Inicialización de variables
         editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonNewUser = findViewById(R.id.buttonNewUser)
         checkBoxRecordarme = findViewById(R.id.checkBoxRecordarme)
-        editTextEmail.setText ( sharedPref.getString(LOGIN_KEY,"") )
-        editTextPassword.setText ( sharedPref.getString(PASSWORD_KEY,"") )
+
+        val listadoLeido = SharedPreferencesManager(this).ReadInformation()
+        if(listadoLeido.first != null){
+            checkBoxRecordarme.isChecked = true
+        }
+        editTextEmail.setText ( listadoLeido.first )
+        editTextPassword.setText ( listadoLeido.second )
 
         //Eventos clic
         buttonLogin.setOnClickListener {
@@ -40,19 +42,9 @@ class LoginActivity : AppCompatActivity() {
             //Validaciones de datos requeridos y formatos
             if(!ValidarDatosRequeridos())
                 return@setOnClickListener
+            //Guardar datos en preferencias.
+            GuardarDatosEnPreferencias()
             //Si pasa validación de datos requeridos, ir a pantalla principal
-            if(checkBoxRecordarme.isChecked){
-                val editor = sharedPref.edit()
-                editor.putString(LOGIN_KEY,editTextEmail.text.toString())
-                editor.putString(PASSWORD_KEY,editTextPassword.text.toString())
-                editor.commit()
-            }
-            else{
-                val editor = sharedPref.edit()
-                editor.putString(LOGIN_KEY,"")
-                editor.putString(PASSWORD_KEY,"")
-                editor.commit()
-            }
             val intencion = Intent(this, MainActivity::class.java)
             intencion.putExtra(EXTRA_LOGIN, email)
             startActivity(intencion)
@@ -63,26 +55,22 @@ class LoginActivity : AppCompatActivity() {
         mediaPlayer=MediaPlayer.create(this, R.raw.title_screen)
         mediaPlayer.start()
     }
-    //validar email
-    val EMAIL_ADDRESS_PATTERN = Pattern.compile(
-        "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
-                "\\@" +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-                "(" +
-                "\\." +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-                ")+"
-    )
-    fun isValidString(str: String): Boolean{
-        return EMAIL_ADDRESS_PATTERN.matcher(str).matches()
+    private fun GuardarDatosEnPreferencias(){
+        val email = editTextEmail.text.toString()
+        val clave = editTextPassword.text.toString()
+        val listadoAGrabar:List<Pair<String,String>>
+        if(checkBoxRecordarme.isChecked){
+            listadoAGrabar = listOf(LOGIN_KEY to email, PASSWORD_KEY to clave)
+        }
+        else{
+            listadoAGrabar = listOf(LOGIN_KEY to "", PASSWORD_KEY to "")
+        }
+        SharedPreferencesManager(this).SaveInformation(listadoAGrabar)
+        FileExternalManager(this).SaveInformation()
+        FileExternalManager(this).ReadInformation()
     }
 
-    private fun ActivarRecuerdame():Boolean{
-        val sharedPref = getPreferences(Context.MODE_PRIVATE)
-        if(sharedPref.getString(LOGIN_KEY,"") != null&& sharedPref.getString(PASSWORD_KEY,"")!=null) {
-            return true
-        }
-        return false}
+    fun String.isValidEmail() = isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
     private fun ValidarDatosRequeridos():Boolean{
         val email = editTextEmail.text.toString()
@@ -92,13 +80,18 @@ class LoginActivity : AppCompatActivity() {
             editTextEmail.requestFocus()
             return false
         }
+        if(!email.isValidEmail()){
+            editTextEmail.setError("El email no es válido")
+            editTextEmail.requestFocus()
+            return false
+        }
         if (clave.isEmpty()) {
             editTextPassword.setError("La clave es obligatoria")
             editTextPassword.requestFocus()
             return false
         }
-        if (clave.length < 3) {
-            editTextPassword.setError("La clave debe tener al menos 3 caracteres")
+        if (clave.length < PASSWORD_LENGHT) {
+            editTextPassword.setError("La clave debe tener al menos ${PASSWORD_LENGHT} caracteres")
             editTextPassword.requestFocus()
             return false
         }
@@ -109,4 +102,3 @@ class LoginActivity : AppCompatActivity() {
         super.onDestroy()
     }
 }
-

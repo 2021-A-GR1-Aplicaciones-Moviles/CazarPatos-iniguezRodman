@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="Nuevo Juego" />
-    <item android:title="Juego Online" />
+    <item
+        android:id="@+id/action_nuevo_juego"
+        android:title="Nuevo Juego" />
+    <item
+        android:id="@+id/action_jugar_online"
+        android:title="Jugar Online" />
 </menu>
