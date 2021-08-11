@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.Toast
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
     lateinit var editTextEmail: EditText
@@ -18,9 +20,11 @@ class LoginActivity : AppCompatActivity() {
     lateinit var buttonNewUser:Button
     lateinit var checkBoxRecordarme: CheckBox
     lateinit var mediaPlayer: MediaPlayer
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        auth = FirebaseAuth.getInstance();
         //Inicialización de variables
         editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
@@ -39,6 +43,7 @@ class LoginActivity : AppCompatActivity() {
         buttonLogin.setOnClickListener {
             val email = editTextEmail.text.toString()
             val clave = editTextPassword.text.toString()
+            AutenticarUsuario(email, clave)
             //Validaciones de datos requeridos y formatos
             if(!ValidarDatosRequeridos())
                 return@setOnClickListener
@@ -55,6 +60,22 @@ class LoginActivity : AppCompatActivity() {
         mediaPlayer=MediaPlayer.create(this, R.raw.title_screen)
         mediaPlayer.start()
     }
+
+    fun AutenticarUsuario(email:String, password:String){
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    var intent = Intent(this,MainActivity::class.java)
+                    intent.putExtra(LOGIN_KEY,auth.currentUser!!.email)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(baseContext, task.exception!!.message,
+                        Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
     private fun GuardarDatosEnPreferencias(){
         val email = editTextEmail.text.toString()
         val clave = editTextPassword.text.toString()
