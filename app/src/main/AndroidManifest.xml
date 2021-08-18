@@ -9,6 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CazarPatos.Personalizado">
         <activity android:name=".RankingActivity">
+            android:parentActivityName=".MainActivity">
         </activity>
         <activity android:name=".LoginActivity">
             <intent-filter>

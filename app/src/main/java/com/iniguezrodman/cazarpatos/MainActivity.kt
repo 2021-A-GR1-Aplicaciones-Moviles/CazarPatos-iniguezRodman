@@ -11,7 +11,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -85,9 +88,62 @@ class MainActivity : AppCompatActivity() {
                 textViewTiempo.setText("0s")
                 gameOver = true
                 mostrarDialogoGameOver()
+                val nombreJugador = textViewUsuario.text.toString()
+                val patosCazados = textViewContador.text.toString()
+                procesarPuntajePatosCazados(nombreJugador, patosCazados.toInt())
             }
         }.start()
     }
+
+    fun procesarPuntajePatosCazados(nombreJugador:String, patosCazados:Int){
+        val jugador = Jugador(nombreJugador,patosCazados)
+        //Trata de obtener id del documento de un usuario específico,
+        // si lo obtiene lo actualiza, caso contrario lo crea
+        val db = Firebase.firestore
+        db.collection("usuarios")
+            .whereEqualTo("usuario", jugador.usuario)
+            .get()
+            .addOnSuccessListener { documents ->
+                if(documents!= null &&
+                    documents.documents != null &&
+                    documents.documents.count()>0
+                ){
+                    val idDocumento = documents.documents.get(0).id
+                    actualizarPuntajeJugador(idDocumento, jugador)
+                }
+                else{
+                    ingresarPuntajeJugador(jugador)
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error al obtener datos de jugador:-> {$e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+    fun ingresarPuntajeJugador(jugador:Jugador){
+        val db = Firebase.firestore
+        db.collection("usuarios")
+            .add(jugador)
+            .addOnSuccessListener { documentReference ->
+                Toast.makeText(this,"Puntaje usuario ingresado exitosamente", Toast.LENGTH_LONG).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this,"Error al ingresar el puntaje:-> {$e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+    fun actualizarPuntajeJugador(idDocumento:String, jugador:Jugador){
+        val db = Firebase.firestore
+        db.collection("usuarios")
+            .document(idDocumento)
+            //.update(contactoHashMap)
+            .set(jugador) //otra forma de actualizar
+            .addOnSuccessListener {
+                Toast.makeText(this,"Puntaje de usuario actualizado exitosamente", Toast.LENGTH_LONG).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this,"Error al actualizar el puntaje:-> {$e.message}" , Toast.LENGTH_LONG).show()
+            }
+    }
+
     private fun mostrarDialogoGameOver() {
         val builder = AlertDialog.Builder(this)
         builder
@@ -98,10 +154,10 @@ class MainActivity : AppCompatActivity() {
             ) { _, _ ->
                 reiniciarJuego()
             }
-            .setNegativeButton("Salir"
+            .setNegativeButton("Cerrar"
             ) { _, _ ->
                 //dialog.dismiss()
-                finish()
+                //finish()
             }
         builder.create().show()
     }
@@ -130,6 +186,11 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_jugar_online -> {
                 jugarOnline()
+                true
+            }
+            R.id.action_ranking -> {
+                val intent = Intent(this, RankingActivity::class.java)
+                startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)

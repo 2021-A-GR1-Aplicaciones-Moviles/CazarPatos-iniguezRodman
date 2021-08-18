@@ -8,4 +8,7 @@
     <item
         android:id="@+id/action_jugar_online"
         android:title="Jugar Online" />
+    <item
+        android:id="@+id/action_ranking"
+        android:title="Hall de fama" />
 </menu>
